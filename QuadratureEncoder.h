@@ -3,10 +3,10 @@
 
 #include <Arduino.h>
 
-#define ENCODER_1 1
-#define ENCODER_2 2
-#define ENCODER_3 3
-#define ENCODER_4 4
+#define ENCODER_1 0
+#define ENCODER_2 1
+#define ENCODER_3 2
+#define ENCODER_4 3
 
 #define ENCODER_THRESHOLD 250 // Timeout in ms to consider zero speed
 

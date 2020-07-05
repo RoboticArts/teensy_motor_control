@@ -2,95 +2,88 @@
   #include "QuadratureEncoder.h"
 
 
+  volatile float time_now_array[4] = {0,0,0,0};
+  volatile float last_time_array[4] = {0,0,0,0};
+  volatile bool  direction_array[4] = {true,true,true,true};
+  volatile bool  new_speed_array[4] = {false,false,false,false};
 
-  // ------------- Encoder 1 ------------- //
+  volatile float old_time_now_array[4] = {0,0,0,0};
+  volatile float old_last_time_array[4] = {0,0,0,0};
+  volatile bool  old_direction_array[4] = {true,true,true,true};  
   
-  volatile float time_now_1 = 0, last_time_1 = 0;
-  volatile bool direction_1 = true;
+
+  void measurePulse(int encoder){
+
+     last_time_array[encoder] = time_now_array[encoder];
+     time_now_array[encoder] = micros();
+    
+  }
+  
+  void measureSign(int encoder){
+
+       
+    if((micros()-time_now_array[encoder]) < (time_now_array[encoder]-last_time_array[encoder])/3.0)
+        direction_array[encoder] = true;
+    else
+        direction_array[encoder] = false;  
+
+    old_last_time_array[encoder] = last_time_array[encoder];
+    old_time_now_array[encoder]  = time_now_array[encoder];
+    old_direction_array[encoder] = direction_array[encoder];
+    new_speed_array[encoder]     = true;
+    
+  }
+  
+  // ------------- Encoder 1 ------------- //
   
   void hall_A_ISR1()
   {  
-     last_time_1 = time_now_1;
-     time_now_1 = micros();
+     measurePulse(ENCODER_1);
   }
   
   
   void hall_B_ISR1()
   {
-   
-    if((micros()-time_now_1) < (time_now_1-last_time_1)/3.0)
-        direction_1 = true;
-    else
-        direction_1 = false;  
-  
+     measureSign(ENCODER_1);
   }
-  
   
   // ------------- Encoder 2 ------------- //
   
-  volatile float time_now_2 = 0, last_time_2 = 0;
-  volatile bool direction_2 = true;
-  
   void hall_A_ISR2()
   {  
-     last_time_2 = time_now_2;
-     time_now_2 = micros();
+     measurePulse(ENCODER_2);
   }
   
   
   void hall_B_ISR2()
   {
-   
-    if((micros()-time_now_2) < (time_now_2-last_time_2)/3.0)
-        direction_2 = true;
-    else
-        direction_2 = false;  
-  
+     measureSign(ENCODER_2);
   }
   
   // ------------- Encoder 3 ------------- //
   
-  volatile float time_now_3 = 0, last_time_3 = 0;
-  volatile bool direction_3 = true;
-  
   void hall_A_ISR3()
   {  
-     last_time_3 = time_now_3;
-     time_now_3 = micros();
+    measurePulse(ENCODER_3);
   }
   
   
   void hall_B_ISR3()
   {
-   
-    if((micros()-time_now_3) < (time_now_3-last_time_3)/3.0)
-        direction_3 = true;
-    else
-        direction_3 = false;  
-  
+    measureSign(ENCODER_3);
   }
-  
   
   // ------------- Encoder 4 ------------- //
   
-  volatile float time_now_4 = 0, last_time_4 = 0;
-  volatile bool direction_4 = true;
   
   void hall_A_ISR4()
   {  
-     last_time_4 = time_now_4;
-     time_now_4 = micros();
+    measurePulse(ENCODER_4);
   }
-  
   
   void hall_B_ISR4()
   {
-   
-    if((micros()-time_now_4) < (time_now_4-last_time_4)/3.0)
-        direction_4 = true;
-    else
-        direction_4 = false;  
-  
+    measureSign(ENCODER_4);
   }
 
 
@@ -134,42 +127,29 @@
   float QuadratureEncoder::getSpeed(String units){
   
       float velocity_value = 0;
+      float time_now = 0, last_time = 0;
       float period_per_pulse, period_per_turn;
       float f, rpm, w, v;
-      float time_now = 0, last_time = 0;
-      bool  direction = true;
-  
-      if (this->encoder == ENCODER_1){
-  
-          time_now = time_now_1;
-          last_time = last_time_1;
-          direction = direction_1;
-          
+      bool direction = true;
+      int encoder = this->encoder;
+
+
+      if(new_speed_array[encoder] == true){
+
+          time_now = time_now_array[encoder];
+          last_time = last_time_array[encoder];
+          direction = direction_array[encoder];
+          new_speed_array[encoder] = false;
+        
       }
-  
-      if (this->encoder == ENCODER_2){
-  
-          time_now = time_now_2;
-          last_time = last_time_2;
-          direction = direction_2;
-          
+
+      else{
+        
+          time_now =  old_time_now_array[encoder];
+          last_time = old_last_time_array[encoder];
+          direction = old_direction_array[encoder];
       }
-  
-      if (this->encoder == ENCODER_3){
-  
-          time_now = time_now_3;
-          last_time = last_time_3;
-          direction = direction_3;
-          
-      }
-  
-      if (this->encoder == ENCODER_4){
-  
-          time_now = time_now_4;
-          last_time = last_time_4;
-          direction = direction_4;
-          
-      }
+      
   
       period_per_pulse = (time_now - last_time)/1000000; 
       f = 1.0 / period_per_pulse;
@@ -206,7 +186,7 @@
       velocity_value = 0;
     }
   
-
+   
     return velocity_value;
   }
 
