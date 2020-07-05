@@ -86,3 +86,8 @@
 
     return this->Input;
   }
+
+  float MotorPID::getPosition(){
+    
+    return encoder->getPosition("rad");
+  }
