@@ -2,12 +2,13 @@
   #include "QuadratureEncoder.h"
 
 
-  volatile float time_now_array[4] = {0,0,0,0};
+  volatile float time_now_array[4]  = {0,0,0,0};
   volatile float last_time_array[4] = {0,0,0,0};
   volatile bool  direction_array[4] = {true,true,true,true};
   volatile bool  new_speed_array[4] = {false,false,false,false};
+  volatile int   increment_array[4] = {0,0,0,0}; 
 
-  volatile float old_time_now_array[4] = {0,0,0,0};
+  volatile float old_time_now_array[4]  = {0,0,0,0};
   volatile float old_last_time_array[4] = {0,0,0,0};
   volatile bool  old_direction_array[4] = {true,true,true,true};  
   
@@ -16,6 +17,11 @@
 
      last_time_array[encoder] = time_now_array[encoder];
      time_now_array[encoder] = micros();
+     
+     if(increment_array[encoder] < PULSES_PER_TURN)
+         increment_array[encoder]+=1;
+     else
+         increment_array[encoder] = 0;
     
   }
   
@@ -121,6 +127,23 @@
       }
   
       
+  }
+
+  float QuadratureEncoder::getPosition(String units){
+
+    int current_pulses = 0;
+    float wheel_position = 0;
+
+    current_pulses = increment_array[encoder];
+
+    if(units.equals("rad"))
+      wheel_position = map(float(current_pulses), 0.0,  PULSES_PER_TURN, 0.0 , 2.0*PI);
+
+    if(units.equals("deg"))
+      wheel_position = map(float(current_pulses), 0.0, PULSES_PER_TURN, 0.0 , 360.0);
+
+      
+    return wheel_position;
   }
 
 

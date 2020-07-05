@@ -2,6 +2,7 @@
 #define QUADRATURE_ENCODER_H
 
 #include <Arduino.h>
+#include "teensy_motor_control.h"
 
 #define ENCODER_1 0
 #define ENCODER_2 1
@@ -21,6 +22,7 @@ class QuadratureEncoder{
 
     QuadratureEncoder(int encoder, int encoder_pin_a, int encoder_pin_b, int pulses_per_turn, float wheel_radius);
     float getSpeed(String units);
+    float getPosition(String units);
 
 };
 
