@@ -25,8 +25,8 @@ class MotorPID{
      void begin(void);
      void run(void);
      void setVelocity(double velocity);
-     float getVelocity(void);
-     float getPosition(void);
+     float getVelocity(String units);
+     float getPosition(String units);
   
   
 

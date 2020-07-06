@@ -82,12 +82,13 @@
   }
 
   
-  float MotorPID::getVelocity(){
+  float MotorPID::getVelocity(String units){
 
-    return this->Input;
+    //return this->Input;
+    return encoder -> getSpeed("rad/s");
   }
 
-  float MotorPID::getPosition(){
+  float MotorPID::getPosition(String units){
     
     return encoder->getPosition("rad");
   }
