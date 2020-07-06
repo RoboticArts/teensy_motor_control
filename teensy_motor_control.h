@@ -6,6 +6,14 @@
 #define GEARBOX_RATIO 75
 #define PULSES_PER_TURN GEARBOX_RATIO
 #define WHEEL_RADIUS 0.03875
+#define RAD_PER_PULSE (2*PI)/PULSES_PER_TURN
+#define DEG_PER_PULSE 360/PULSES_PER_TURN
+
+// Motor names
+#define MOTOR_FRONT_LEFT   0
+#define MOTOR_FRONT_RIGHT  1
+#define MOTOR_REAR_LEFT    2
+#define MOTOR_REAR_RIGHT   3
 
 
 // Control Pins defines //
