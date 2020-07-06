@@ -18,10 +18,6 @@
      last_time_array[encoder] = time_now_array[encoder];
      time_now_array[encoder] = micros();
      
-     if(increment_array[encoder] < PULSES_PER_TURN)
-         increment_array[encoder]+=1;
-     else
-         increment_array[encoder] = 0;
     
   }
   
@@ -37,6 +33,12 @@
     old_time_now_array[encoder]  = time_now_array[encoder];
     old_direction_array[encoder] = direction_array[encoder];
     new_speed_array[encoder]     = true;
+
+
+    if(direction_array[encoder] == true)
+         increment_array[encoder]++;
+    else
+         increment_array[encoder]--;
     
   }
   
@@ -136,11 +138,13 @@
 
     current_pulses = increment_array[encoder];
 
+    // Set units
     if(units.equals("rad"))
-      wheel_position = map(float(current_pulses), 0.0,  PULSES_PER_TURN, 0.0 , 2.0*PI);
+      wheel_position = current_pulses * RAD_PER_PULSE;
 
     if(units.equals("deg"))
-      wheel_position = map(float(current_pulses), 0.0, PULSES_PER_TURN, 0.0 , 360.0);
+      wheel_position = current_pulses * DEG_PER_PULSE;
+  
 
       
     return wheel_position;
