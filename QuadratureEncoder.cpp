@@ -2,11 +2,11 @@
   #include "QuadratureEncoder.h"
 
 
-  volatile float time_now_array[4]  = {0,0,0,0};
-  volatile float last_time_array[4] = {0,0,0,0};
-  volatile bool  direction_array[4] = {true,true,true,true};
-  volatile bool  new_speed_array[4] = {false,false,false,false};
-  volatile int   increment_array[4] = {0,0,0,0}; 
+  volatile float   time_now_array[4]  = {0,0,0,0};
+  volatile float   last_time_array[4] = {0,0,0,0};
+  volatile bool    direction_array[4] = {true,true,true,true};
+  volatile bool    new_speed_array[4] = {false,false,false,false};
+  volatile int64_t increment_array[4] = {0,0,0,0}; 
 
   volatile float old_time_now_array[4]  = {0,0,0,0};
   volatile float old_last_time_array[4] = {0,0,0,0};
@@ -133,7 +133,7 @@
 
   float QuadratureEncoder::getPosition(String units){
 
-    int current_pulses = 0;
+    int64_t current_pulses = 0;
     float wheel_position = 0;
 
     current_pulses = increment_array[encoder];
@@ -148,6 +148,12 @@
 
       
     return wheel_position;
+  }
+
+  void QuadratureEncoder::resetPosition(){
+    
+    increment_array[encoder] = 0;
+  
   }
 
 
