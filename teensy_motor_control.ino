@@ -11,6 +11,14 @@
 #include <sensor_msgs/JointState.h>
 
 
+// #define DEBUG
+
+// To do
+// Use a general name for the ros topic. For example microcontroller_motor_control instead of teensy_motor_control
+// Wrap all the classes in a main class called MotorControl 
+// Use a custom serial protocol instead of rosserial to remove external dependencies
+// Add a serial message to set, display and the save in the EEPROM the PID from an external GUI
+
 
 // Global variables
 float setpoint[4] = {0,0,0,0};
@@ -18,8 +26,7 @@ float setpoint[4] = {0,0,0,0};
 // Utils variables
 elapsedMillis timeout_sys;
 float tic = 0, toc = 0;
-double input_1, input_2, input_3, input_4;
-//double setpoint;
+double input[4] = {0,0,0,0};
 
 // ROS variables
 ros::NodeHandle nh;
@@ -56,11 +63,14 @@ QuadratureEncoder rear_right_encoder (ENCODER_3, ENC_A_REAR_RIGHT, ENC_B_REAR_RI
 QuadratureEncoder rear_left_encoder (ENCODER_4, ENC_A_REAR_LEFT, ENC_B_REAR_LEFT, PULSES_PER_TURN, WHEEL_RADIUS);
 
 
-double Kp=6500, Ki=25000, Kd=0;
+//double Kp=6500, Ki=25000, Kd=0;
+double Kp=30000, Ki=300000, Kd=10;
+
+
 
 MotorPID front_right_controller(front_right_motor, front_right_encoder, Kp, Ki, Kd);
 MotorPID front_left_controller(front_left_motor, front_left_encoder, Kp, Ki, Kd);
-MotorPID rear_right_controller(rear_right_motor, rear_right_encoder, Kp, Ki, Kd);
+MotorPID rear_right_controller(rear_right_motor, rear_right_encoder, 15000, 90000, Kd);
 MotorPID rear_left_controller(rear_left_motor, rear_left_encoder, Kp, Ki, Kd);
 
 
@@ -88,66 +98,110 @@ motor_state.position_length=4;
 motor_state.velocity_length=4;
 motor_state.effort_length=4;
 
+
+#ifdef DEBUG
+  while(!Serial){}
+#endif
+
 }
+
 
 
 void loop() {
 
 
-  
+#ifdef DEBUG
+
+  setpoint[MOTOR_REAR_RIGHT] = 0.1;
+  setpoint[MOTOR_REAR_LEFT] = 0.1;
+  setpoint[MOTOR_FRONT_RIGHT] = 0.1;
+  setpoint[MOTOR_FRONT_LEFT] = 0.1;
+
+#endif
+
+
   rear_right_controller.setVelocity(setpoint[MOTOR_REAR_RIGHT]);
   rear_right_controller.run();
   motor_state.position[MOTOR_REAR_RIGHT] = rear_right_controller.getPosition("rad");
   motor_state.velocity[MOTOR_REAR_RIGHT] = rear_right_controller.getVelocity("rad/s");
-
-
+ 
   rear_left_controller.setVelocity(setpoint[MOTOR_REAR_LEFT]);
   rear_left_controller.run();
   motor_state.position[MOTOR_REAR_LEFT] = rear_left_controller.getPosition("rad");
   motor_state.velocity[MOTOR_REAR_LEFT] = rear_left_controller.getVelocity("rad/s");
+
 
   front_right_controller.setVelocity(setpoint[MOTOR_FRONT_RIGHT]);
   front_right_controller.run();
   motor_state.position[MOTOR_FRONT_RIGHT] = front_right_controller.getPosition("rad");
   motor_state.velocity[MOTOR_FRONT_RIGHT] = front_right_controller.getVelocity("rad/s");
 
+
   front_left_controller.setVelocity(setpoint[MOTOR_FRONT_LEFT]);
   front_left_controller.run();
   motor_state.position[MOTOR_FRONT_LEFT] = front_left_controller.getPosition("rad");
-  motor_state.velocity[MOTOR_FRONT_LEFT] = front_left_controller.getVelocity("rad/s");
+  motor_state.velocity[MOTOR_FRONT_LEFT] = front_left_controller.getVelocity("rad/s"); 
 
 
-  if (timeout_sys >= 50){
+#ifndef DEBUG
 
-     motor_pub_state.publish(&motor_state);
-     nh.spinOnce();
-     timeout_sys = 0;
+  if (Serial){  
+    
+    if (timeout_sys >= 50){
+    
+         motor_pub_state.publish(&motor_state);
+         nh.spinOnce();
+         timeout_sys = 0;
+    }
+    
   }
+  
+  else{
+    
+    rear_right_controller.setVelocity(0);
+    rear_left_controller.setVelocity(0);
+    front_right_controller.setVelocity(0);
+    front_left_controller.setVelocity(0);
 
- 
-/*
+    rear_right_controller.resetPosition();
+    rear_left_controller.resetPosition();
+    front_right_controller.resetPosition();
+    front_left_controller.resetPosition();
+    
+  }
+  
+#endif
+
+
+#ifdef DEBUG
+  
+  input[MOTOR_REAR_RIGHT]  = rear_right_controller.getVelocity("m/s");
+  input[MOTOR_REAR_LEFT]   = rear_left_controller.getVelocity("m/s");
+  input[MOTOR_FRONT_RIGHT] = front_right_controller.getVelocity("m/s");
+  input[MOTOR_FRONT_LEFT]  = front_left_controller.getVelocity("m/s");
+
   if(timeout_sys >= 10){
     
-    Serial.print(0.6*100);
+    Serial.print(0.25*100);
     Serial.print(",");
-    Serial.print(0.1*100);
+    Serial.print(0.0*100);
+    Serial.print(",");    
+    Serial.print(input[MOTOR_REAR_RIGHT]*100);
     Serial.print(",");
-    Serial.print(-0.1*100);
+    Serial.print(input[MOTOR_REAR_LEFT]*100);
     Serial.print(",");
-    Serial.print(input_1*100);
+    Serial.print(input[MOTOR_FRONT_RIGHT]*100);
     Serial.print(",");
-    Serial.print(input_2*100);
-    Serial.print(",");
-    Serial.print(input_3*100);
-    Serial.print(",");
-    Serial.print(input_4*100);
-    Serial.print(",");
-    Serial.print(setpoint*100);
+    Serial.print(input[MOTOR_FRONT_LEFT]*100);
+    Serial.print(","); 
+    Serial.print(setpoint[MOTOR_REAR_LEFT]*100);
     Serial.println();
-    
+  
     timeout_sys = 0;
 
   }
-*/
+
+#endif
+
   
 }
