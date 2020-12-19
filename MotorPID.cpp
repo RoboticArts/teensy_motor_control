@@ -31,7 +31,7 @@
     //mPID->Compute();
     //motor->setPWM(this->Output); 
 
-    if (abs(Setpoint) >= 0.1){
+    if (abs(Setpoint) >= MINIMUM_SETPOINT){
       
       Input = encoder->getSpeed("m/s");
       mPID->Compute();
@@ -45,13 +45,13 @@
     
     }
       
-    else if (abs(Setpoint) >= 0.05){
+    else if (abs(Setpoint) >= SETPOINT_THRESHOLD){
     
         Input = encoder->getSpeed("m/s");
         if(Setpoint >= 0)
-          Setpoint = 0.1;
+          Setpoint = MINIMUM_SETPOINT;
         else
-          Setpoint = -0.1;
+          Setpoint = -MINIMUM_SETPOINT;
           
         mPID->Compute();
   
@@ -63,7 +63,7 @@
         motor->setPWM(int(Output));
     }
     
-    else if (abs(Setpoint) < 0.05){
+    else if (abs(Setpoint) < SETPOINT_THRESHOLD){
     
        Input = 0;
        Setpoint = 0;
@@ -85,10 +85,15 @@
   float MotorPID::getVelocity(String units){
 
     //return this->Input;
-    return encoder -> getSpeed("rad/s");
+    return encoder -> getSpeed(units);
   }
 
   float MotorPID::getPosition(String units){
     
-    return encoder->getPosition("rad");
+    return encoder->getPosition(units);
+  }
+
+  void MotorPID::resetPosition(){
+
+    encoder->resetPosition();
   }
