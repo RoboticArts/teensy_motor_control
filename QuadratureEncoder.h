@@ -23,6 +23,7 @@ class QuadratureEncoder{
     QuadratureEncoder(int encoder, int encoder_pin_a, int encoder_pin_b, int pulses_per_turn, float wheel_radius);
     float getSpeed(String units);
     float getPosition(String units);
+    void resetPosition(void);
 
 };
 
