@@ -3,11 +3,11 @@
 
 
 // Motor properties
-#define GEARBOX_RATIO 75
-#define PULSES_PER_TURN GEARBOX_RATIO
+#define GEARBOX_RATIO 78
+#define PULSES_PER_TURN 11*GEARBOX_RATIO
 #define WHEEL_RADIUS 0.03875
-#define RAD_PER_PULSE (2*PI)/PULSES_PER_TURN
-#define DEG_PER_PULSE 360/PULSES_PER_TURN
+#define RAD_PER_PULSE (2*PI)/float(PULSES_PER_TURN)
+#define DEG_PER_PULSE 360/float(PULSES_PER_TURN)
 
 // Motor names
 #define MOTOR_FRONT_LEFT   0
@@ -48,9 +48,9 @@
 
 
 
-
-
-
+// Control parameters
+#define SETPOINT_THRESHOLD 0.001 // Setpoints between 0 and SETPOINT_THRESHOLD are considered zero 
+#define MINIMUM_SETPOINT 0.002    // Setpoints between SETPOINT_THRESHOLD and MINIMUM_SETPOINT are considered MINIMUM_SETPOINT
 
 
 
